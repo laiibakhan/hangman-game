@@ -9,7 +9,7 @@ while run:
     root = Tk()
     root.geometry('905x700')
     root.title('HANG MAN')
-    root.config(bg='#E7FFFF')
+    root.config(bg='white')
     
     # Force window to popup on MacOS
     root.lift()
@@ -31,15 +31,41 @@ while run:
     selected_word = random.choice(words_list)
     
     # HINT LABEL
-    hint_lbl = Label(root, text=f"HINT: Category is {category_name}", bg="#E7FFFF", fg="black", font=("arial", 25, "bold"))
+    hint_lbl = Label(root, text=f"HINT: Category is {category_name}", bg="white", fg="black", font=("arial", 25, "bold"))
     hint_lbl.place(x=150, y=70)
+
+    # TIMER LABEL
+    timer_state = {"seconds": 60, "active": True}
+    timer_lbl = Label(root, text=f"TIME LEFT: {timer_state['seconds']} sec", bg="white", fg="black", font=("arial", 25, "bold"))
+    timer_lbl.place(x=550, y=10)
+
+    def update_timer():
+        global run, score
+        if not timer_state["active"] or not root.winfo_exists():
+            return
+        timer_state["seconds"] -= 1
+        timer_lbl.config(text=f"TIME LEFT: {timer_state['seconds']} sec")
+        if timer_state["seconds"] <= 0:
+            timer_state["active"] = False
+            answer = messagebox.askyesno('TIME UP', 'TIME IS OVER!\nThe word was: {}\nWANT TO PLAY AGAIN?'.format(selected_word.upper()))
+            if answer:
+                run = True
+                score = 0
+                root.destroy()
+            else:
+                run = False
+                root.destroy()
+        else:
+            root.after(1000, update_timer)
+
+    root.after(1000, update_timer)
 
     # Dashes
     x = 250
     d_labels = []
     for i in range(len(selected_word)):
         x += 60
-        lbl = Label(root, text="_ ", bg="#E7FFFF", fg="black", font=("arial", 40))
+        lbl = Label(root, text="_ ", bg="white", fg="black", font=("arial", 40))
         lbl.place(x=x, y=450)
         d_labels.append(lbl)
 
@@ -48,7 +74,7 @@ while run:
     img_dict = {}
     for let in al:
         try:
-            img_dict[let] = PhotoImage(file="{}.gif".format(let))
+            img_dict[let] = PhotoImage(file="{}.png".format(let))
         except:
             img_dict[let] = None
 
@@ -56,21 +82,22 @@ while run:
     h_img_dict = {}
     for hangman in h123:
         try:
-            img = PhotoImage(file="{}.gif".format(hangman))
+            img = PhotoImage(file="{}.png".format(hangman))
             h_img_dict[hangman] = img.subsample(2, 2)
         except:
             h_img_dict[hangman] = None
 
-    button_info = [['b1','a',0,595],['b2','b',70,595],['b3','c',140,595],['b4','d',210,595],['b5','e',280,595],['b6','f',350,595],['b7','g',420,595],['b8','h',490,595],['b9','i',560,595],['b10','j',630,595],['b11','k',700,595],['b12','l',770,595],['b13','m',840,595],['b14','n',0,645],['b15','o',70,645],['b16','p',140,645],['b17','q',210,645],['b18','r',280,645],['b19','s',350,645],['b20','t',420,645],['b21','u',490,645],['b22','v',560,645],['b23','w',630,645],['b24','x',700,645],['b25','y',770,645],['b26','z',840,645]]
+    # Center align buttons - 17 buttons in first row, 9 in second
+    button_info = [['b1','a',27,595],['b2','b',77,595],['b3','c',127,595],['b4','d',177,595],['b5','e',227,595],['b6','f',277,595],['b7','g',327,595],['b8','h',377,595],['b9','i',427,595],['b10','j',477,595],['b11','k',527,595],['b12','l',577,595],['b13','m',627,595],['b14','n',677,595],['b15','o',727,595],['b16','p',777,595],['b17','q',827,595],['b18','r',227,645],['b19','s',277,645],['b20','t',327,645],['b21','u',377,645],['b22','v',427,645],['b23','w',477,645],['b24','x',527,645],['b25','y',577,645],['b26','z',627,645]]
 
     btn_dict = {}
     for q1 in button_info:
         btn_id, letter, x_pos, y_pos = q1
         img = img_dict.get(letter)
         if img:
-            btn = Button(root, bd=0, command=lambda l=letter, b=btn_id: check(l, b), bg="#E7FFFF", activebackground="#E7FFFF", font=("arial", 10), image=img)
+            btn = Button(root, bd=0, highlightthickness=0, command=lambda l=letter, b=btn_id: check(l, b), bg="white", activebackground="white", font=("arial", 10), image=img, width=40, height=40, relief=FLAT, padx=0, pady=0)
         else:
-            btn = Button(root, text=letter.upper(), bd=1, command=lambda l=letter, b=btn_id: check(l, b), bg="#E7FFFF", fg="black", activebackground="#E7FFFF", font=("arial", 15, "bold"), width=3, height=1)
+            btn = Button(root, text=letter.upper(), bd=1, command=lambda l=letter, b=btn_id: check(l, b), bg="white", fg="black", activebackground="white", font=("arial", 15, "bold"), width=3, height=1)
         btn.place(x=x_pos, y=y_pos)
         btn_dict[btn_id] = btn
 
@@ -80,9 +107,9 @@ while run:
         c_id, h_id = p1
         img = h_img_dict.get(h_id)
         if img:
-            lbl = Label(root, bg="#E7FFFF", image=img)
+            lbl = Label(root, bg="white", image=img)
         else:
-            lbl = Label(root, text="Mistakes: {} / 6".format(int(h_id[1]) - 1), bg="#E7FFFF", font=("arial", 20, "bold"), fg="red")
+            lbl = Label(root, text="Mistakes: {} / 6".format(int(h_id[1]) - 1), bg="white", font=("arial", 20, "bold"), fg="red")
         lbl_dict[c_id] = lbl
 
     if 'c1' in lbl_dict:
@@ -96,15 +123,15 @@ while run:
             root.destroy()
 
     try:
-        e1 = PhotoImage(file = 'exit.gif')
-        ex = Button(root,bd = 0,command = close,bg="#E7FFFF",activebackground = "#E7FFFF",font=10,image=e1)
+        e1 = PhotoImage(file = 'exit.png')
+        ex = Button(root,bd = 0,command = close,bg="white",activebackground = "white",font=10,image=e1)
         ex.place(x=770,y=10)
     except:
-        ex = Button(root,text="EXIT",bd = 1,command = close,bg="#ff9999",fg="black",activebackground = "#ff9999",font=("arial",15,"bold"))
+        ex = Button(root,text="EXIT",bd = 1,command = close,bg="white",fg="black",activebackground = "white",font=("arial",15,"bold"))
         ex.place(x=770,y=10)
         
     s2 = 'SCORE:'+str(score)
-    s1 = Label(root,text = s2,bg = "#E7FFFF",fg="black",font = ("arial",25))
+    s1 = Label(root,text = s2,bg = "white",fg="black",font = ("arial",25))
     s1.place(x=10,y=10)
 
     def check(letter, btn_id):
